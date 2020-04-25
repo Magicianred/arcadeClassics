@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tennis game</title>
 </head>
-<body>
+<body onload="game()">
     <h1>Arcade Classics - Tennis Game</h1>
 
     <center><canvas id="myCanvas" style="font-size: 28px" id="canvas" width="800" height="600"></canvas></center>
@@ -225,7 +225,7 @@
 
     };
 
-    window.onload = function game() {
+    function game() {
     canvasContext = canvas.getContext('2d');
 
     // set the ball's movement
