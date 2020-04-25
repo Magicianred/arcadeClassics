@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" style="text-align: center;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis game</title>
+</head>
+<body onload="game()">
+    <h1>Arcade Classics - Tennis Game</h1>
+
+    <center><canvas id="myCanvas" style="font-size: 28px" id="canvas" width="800" height="600"></canvas></center>
+
+    <script> 
+            // Canvas 
+    var canvas = document.getElementById('myCanvas'),
+    canvasWidth = canvas['width'],
+    canvasHeight = canvas['height'],
+    canvasColor = 'black',
+    canvasContext;
+
+    // Ball
+    var ballX = 395,
+    ballY = 295,
+    ballSpeedX = 5,
+    ballSpeedY = 5,
+    ballRadius = 8,
+    ballColor = 'white';
+
+    // Paddle properties
+    var paddleWidth = 15,
+    paddleHeight = 100,
+    leftPaddleX = 0,
+    leftPaddleY = 250,
+    rightPaddleX = canvasWidth - paddleWidth,
+    rightPaddleY = 250,
+    paddleColor = 'blue';
+
+    // Total points of each player
+    var player1Score = 0,
+    player2Score = 0;
+
+    // Flag indicating end of the game
+    var gameOver = false;
+
+    // Highest score a player can reach during a game
+    const WINNING_SCORE = 3;
+
+    // Singleplayer mode
+    var pcMovement = true;
+
+    // Adjust canvas font
+    canvas.getContext('2d').font = "20pt courier";
+
+    // Helper function to create a colored rectangle
+    function colorRect(xLeft, yTop, width, height, color) {
+    canvasContext.fillStyle = color;
+    canvasContext.fillRect(xLeft, yTop, width, height);
+    };
+    // Helper function to draw circle
+    function colorBall(x, y, radius, color) {
+    canvasContext.fillStyle = color;
+    canvasContext.beginPath();
+    canvasContext.arc(x, y, radius, 0, Math.PI*2, true);
+    canvasContext.fill();
+    };
+
+    // Draw left paddle
+    function LEFT_PADDLE() {
+    return colorRect(leftPaddleX, leftPaddleY, paddleWidth, paddleHeight, paddleColor);
+    };
+
+    // Draw right paddle
+    function RIGHT_PADDLE() {
+    return colorRect(rightPaddleX, rightPaddleY, paddleWidth, paddleHeight, paddleColor);
+    };
+    // Draw canvas
+    function CANVAS() {
+    if(gameOver){
+        return (        
+        gameOverMenu());
+    }
+    return colorRect(0, 0, canvasWidth, canvasHeight, canvasColor);
+    };
+    // Move right paddle with up and down arrows
+    function multiplayer() {
+    window.addEventListener('keydown', function(event) {
+        if(event.keyCode === 40 && rightPaddleY + paddleHeight < canvasHeight) {
+            rightPaddleY += 1
+        }
+        if(event.keyCode == 38 && rightPaddleY > 0) {
+            rightPaddleY -= 1
+        }
+    });
+    }
+
+
+    // Draw and move ball
+    function BALL() { 
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+    // test x-axis limits
+    if(ballX < 0)
+        if(ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+
+            // calculates the angle for hitting the ball
+            var delta = ballY - (leftPaddleY + paddleHeight/2);
+            ballSpeedY = delta * 0.25;
+        }
+        else {
+            player2Score++;
+            resetBall();
+        };
+
+    if(ballX > canvasWidth)
+        if(ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+
+            // calculates the angle for hitting the ball
+            var delta = ballY - (rightPaddleY + paddleHeight/2);
+            ballSpeedY = delta * 0.25;
+        }
+        else {
+            player1Score++;
+            resetBall();
+        }
+
+    // test y-axis limits
+    if(ballY < 0 || ballY > canvasHeight){
+        ballSpeedY = -ballSpeedY;
+    };  
+    };
+
+    function resetBall(){
+    if(player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
+        gameOver = true;
+    } else {
+        ballX = 395;
+        ballY = 295;
+        ballSpeedX = -ballSpeedX;
+    }
+    
+    }
+
+
+    function clickHandler() {
+    window.onclick = () => {
+        player1Score = 0, player2Score = 0;
+        gameOver = false;
+        pcMovement = true;
+    }
+
+    return resetBall();
+    }
+
+    function gameOverMenu() {
+    if(player1Score >= WINNING_SCORE)
+        canvasContext.fillText("Player 1 won!", 300, 100);
+    else if(player2Score >= WINNING_SCORE)
+        canvasContext.fillText("Player 2 won!", 300, 100);
+    player1Score = 0, player2Score = 0, 
+    canvasContext.fillText("Click to play singleplayer mode, ", 140, 300);
+    canvasContext.fillText("hit space to play multiplayer mode!", 120, 350);
+
+    canvas.addEventListener('click', clickHandler);
+    document.addEventListener('keydown', function(e) {
+        if(e.keyCode === 32){
+            player1Score = 0, player2Score = 0,
+            gameOver = false,
+            pcMovement = false;
+        } 
+        return;
+    })
+    }
+
+
+    // captures mouse's movement, event: receives mouse's coordinates
+    function mousePos(event) {
+    // area of the canvas
+    var rect = canvas.getBoundingClientRect();
+    // handle on the HTML page
+    var root = document.documentElement;
+    // getting the relative mouse's position based on the canvas and the scroll
+    var mouseX = event.clientX - rect.left - root.scrollLeft;
+    var mouseY = event.clientY - rect.top - root.scrollTop;
+
+    return {
+            x: mouseX, y: mouseY
+    };
+    }
+
+
+    // Draw gamefield
+    function drawGame() {
+    if(gameOver) {
+        return gameOverMenu();
+    } 
+    // draw background
+    CANVAS();
+    // draw paddles
+    LEFT_PADDLE();
+    RIGHT_PADDLE();
+    // draw ball
+    // Draw ball
+    colorBall(ballX, ballY, ballRadius, ballColor);
+    BALL();
+    canvasContext.fillText(player1Score, 100, 100);
+    canvasContext.fillText(player2Score, canvasWidth -100, 100);
+    if(pcMovement) {
+        var rightPaddleYcenter = rightPaddleY + (paddleHeight/2)
+        if(rightPaddleYcenter < ballY - 30)
+            rightPaddleY += 3;
+        else if(rightPaddleYcenter > ballY + 30)
+            rightPaddleY -= 3;
+    } else {
+        window.addEventListener('keydown', function(event) {
+            if(event.keyCode === 40 && rightPaddleY + paddleHeight < canvasHeight) {
+                rightPaddleY += 0.15;
+            }
+            if(event.keyCode == 38 && rightPaddleY > 0) {
+                rightPaddleY -= 0.15;
+            }
+        });
+    }
+
+    };
+
+    function game() {
+    canvasContext = canvas.getContext('2d');
+
+    // set the ball's movement
+    var framePerSec = 1000/38;
+
+    canvas.addEventListener('mousemove', function(event) {
+        var pos = mousePos(event);
+        leftPaddleY = pos.y - (paddleHeight/2);
+    });
+
+    // move the ball
+    setInterval(function() {
+        drawGame();
+    }, framePerSec);
+
+    };
+    </script>
+</body>
+</html>
