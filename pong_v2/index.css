@@ -1,0 +1,9 @@
+*, body, html {
+    width: 100vw;
+    margin: 0;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+h1 {
+    margin: 5vh auto;
+}
